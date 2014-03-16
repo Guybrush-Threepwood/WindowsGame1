@@ -105,16 +105,24 @@ namespace WindowsGame1
         protected override void Update(GameTime gameTime)
         {
             // Allows the game to exit
-            if ((GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)| 
+            if ((GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed) |
                 (Keyboard.GetState().IsKeyDown(Keys.Escape)))
                 this.Exit();
 
             // Controls the player character's speed. Holding B or Left Shift makes the player run.
             byte PSpeed;
             if ((GamePad.GetState(PlayerIndex.One).Buttons.B == ButtonState.Pressed) |
-               (Keyboard.GetState().IsKeyDown(Keys.LeftShift))) PSpeed = 4;
-            else PSpeed = 2;
-            
+               (Keyboard.GetState().IsKeyDown(Keys.LeftShift)))
+            {
+                PSpeed = 4;
+                player.Running = true;
+            }
+            else 
+            { 
+                PSpeed = 2;
+                player.Running = false;
+            }
+
             // Controls the player character's right and left movement.
             // D-Pad, Left Stick or Arrow Keys move left or right.
             if ((GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) |
@@ -123,6 +131,7 @@ namespace WindowsGame1
             {
                 PVector = new Vector2(PVector.X + PSpeed, PVector.Y);
                 player.FacingRight = true;
+                player.Moving = true;
             }
             else if ((GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) |
                 (Keyboard.GetState().IsKeyDown(Keys.Left)) |
@@ -130,14 +139,16 @@ namespace WindowsGame1
             {
                 PVector = new Vector2(PVector.X - PSpeed, PVector.Y);
                 player.FacingRight = false;
+                player.Moving = true;
             }
+            else player.Moving = false;
 
             if ((GamePad.GetState(PlayerIndex.One).DPad.Up == ButtonState.Pressed) |
-                (Keyboard.GetState().IsKeyDown(Keys.Up)) | 
+                (Keyboard.GetState().IsKeyDown(Keys.Up)) |
                 (GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0))
                 PVector = new Vector2(PVector.X, PVector.Y - PSpeed);
             else if ((GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed) |
-                (Keyboard.GetState().IsKeyDown(Keys.Down)) | 
+                (Keyboard.GetState().IsKeyDown(Keys.Down)) |
                 (GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0))
                 PVector = new Vector2(PVector.X, PVector.Y + PSpeed);
 

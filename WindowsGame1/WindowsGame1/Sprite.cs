@@ -19,6 +19,8 @@ namespace WindowsGame1
         private int currentFrame;
         private int totalFrames;
         public bool FacingRight { get; set; }
+        public bool Moving { get; set; }
+        public bool Running { get; set; }
 
         public Sprite(Texture2D texture)
             : this(texture, 1, 1)
@@ -32,16 +34,25 @@ namespace WindowsGame1
             currentFrame = 0;
             totalFrames = Rows * Columns;
             FacingRight = true;
+            Moving = false;
         }
 
         public void Update()
         {
-            if (System.DateTime.UtcNow.Ticks % 5 == 0)
+            if (Moving)
             {
-                currentFrame++;
-                if (currentFrame == totalFrames)
-                    currentFrame = 0;
+                byte speed;
+                if (Running) speed = 2;
+                else speed = 4;
+
+                if (System.DateTime.UtcNow.Ticks % speed == 0)
+                {
+                    currentFrame++;
+                    if (currentFrame == totalFrames)
+                        currentFrame = 0;
+                }
             }
+            else currentFrame = 0;
         }
 
         public void Draw(SpriteBatch spriteBatch, Vector2 location)
@@ -49,13 +60,13 @@ namespace WindowsGame1
             _width = Texture.Width / Columns;
             _height = Texture.Height / Rows;
             int row = (int)((float)currentFrame / (float)Columns);
-            int column = currentFrame % Columns; 
+            int column = currentFrame % Columns;
+            Vector2 origin = new Vector2(0, 0);
 
             Rectangle sourceRectangle = new Rectangle(Width * column, Height * row, Width, Height);
             Rectangle destinationRectangle = new Rectangle((int)location.X, (int)location.Y, Width, Height);
 
             SpriteEffects facing;
-            Vector2 origin = new Vector2(0, 0);
 
             if (FacingRight) facing = SpriteEffects.None;
             else facing = SpriteEffects.FlipHorizontally;
