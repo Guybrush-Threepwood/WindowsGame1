@@ -19,8 +19,28 @@ namespace WindowsGame1
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         //private Texture2D background;
+
         private Sprite player;
-        Vector2 pvector = new Vector2(400, 200);
+
+        private Vector2 _pVector;
+        public Vector2 PVector
+        {
+            get { return _pVector; }
+            set
+            {
+                Vector2 temp = value;
+
+                if (value.X < 0) temp.X = 0;
+                else if (value.X >= graphics.GraphicsDevice.Viewport.Width - player.Width) 
+                    temp.X = graphics.GraphicsDevice.Viewport.Width - player.Width;
+
+                if (value.Y < 0) temp.Y = 0;
+                else if (value.Y >= graphics.GraphicsDevice.Viewport.Height - player.Height) 
+                    temp.Y = graphics.GraphicsDevice.Viewport.Height - player.Height;
+
+                _pVector = temp;
+            }
+        }
 
         // Set the coordinates to draw the sprite at.
         //Vector2 spritePosition = Vector2.Zero;
@@ -31,6 +51,7 @@ namespace WindowsGame1
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
+
             Content.RootDirectory = "Content";
         }
 
@@ -64,6 +85,7 @@ namespace WindowsGame1
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Texture2D texture = Content.Load<Texture2D>("Megaman-Run");
             player = new Sprite(texture, 1, 4);
+            PVector = new Vector2(400, 200);
         }
 
         /// <summary>
@@ -87,50 +109,37 @@ namespace WindowsGame1
                 (Keyboard.GetState().IsKeyDown(Keys.Escape)))
                 this.Exit();
 
-            // Controls the player character.
-            if ((GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) | 
-                (Keyboard.GetState().IsKeyDown(Keys.Right)))
-                pvector.X += 1;
-            else if ((GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) | 
-                (Keyboard.GetState().IsKeyDown(Keys.Left)))
-                pvector.X -= 1;
-
-            //base.Update(gameTime);
-            // Move the sprite by speed, scaled by elapsed time.
-            /*spritePosition +=
-                spriteSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            int MaxX =
-                graphics.GraphicsDevice.Viewport.Width - myTexture.Width;
-            int MinX = 0;
-            int MaxY =
-                graphics.GraphicsDevice.Viewport.Height - myTexture.Height;
-            int MinY = 0;
-
-            // Check for bounce.
-            if (spritePosition.X > MaxX)
+            // Controls the player character's speed. Holding B or Left Shift makes the player run.
+            byte PSpeed;
+            if ((GamePad.GetState(PlayerIndex.One).Buttons.B == ButtonState.Pressed) |
+               (Keyboard.GetState().IsKeyDown(Keys.LeftShift))) PSpeed = 4;
+            else PSpeed = 2;
+            
+            // Controls the player character's right and left movement.
+            // D-Pad, Left Stick or Arrow Keys move left or right.
+            if ((GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed) |
+                (Keyboard.GetState().IsKeyDown(Keys.Right)) |
+                (GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X > 0))
             {
-                spriteSpeed.X *= -1;
-                spritePosition.X = MaxX;
+                PVector = new Vector2(PVector.X + PSpeed, PVector.Y);
+                player.FacingRight = true;
+            }
+            else if ((GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed) |
+                (Keyboard.GetState().IsKeyDown(Keys.Left)) |
+                (GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.X < 0))
+            {
+                PVector = new Vector2(PVector.X - PSpeed, PVector.Y);
+                player.FacingRight = false;
             }
 
-            else if (spritePosition.X < MinX)
-            {
-                spriteSpeed.X *= -1;
-                spritePosition.X = MinX;
-            }
-
-            if (spritePosition.Y > MaxY)
-            {
-                spriteSpeed.Y *= -1;
-                spritePosition.Y = MaxY;
-            }
-
-            else if (spritePosition.Y < MinY)
-            {
-                spriteSpeed.Y *= -1;
-                spritePosition.Y = MinY;
-            }*/
+            if ((GamePad.GetState(PlayerIndex.One).DPad.Up == ButtonState.Pressed) |
+                (Keyboard.GetState().IsKeyDown(Keys.Up)) | 
+                (GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y > 0))
+                PVector = new Vector2(PVector.X, PVector.Y - PSpeed);
+            else if ((GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed) |
+                (Keyboard.GetState().IsKeyDown(Keys.Down)) | 
+                (GamePad.GetState(PlayerIndex.One).ThumbSticks.Left.Y < 0))
+                PVector = new Vector2(PVector.X, PVector.Y + PSpeed);
 
             player.Update();
 
@@ -151,7 +160,7 @@ namespace WindowsGame1
 
             //spriteBatch.Begin();
             //spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
-            player.Draw(spriteBatch, pvector);
+            player.Draw(spriteBatch, PVector);
 
             //spriteBatch.Draw(background, new Rectangle(0, 0, 800, 480), Color.White);
             //spriteBatch.Draw(myTexture, spritePosition, Color.White);
